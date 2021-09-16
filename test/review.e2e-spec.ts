@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
-import { CreateReviewDto } from '../dist/review/dto/create-review.dto';
+import { AppModule } from '../src/app.module';
+import { CreateReviewDto } from '../src/review/dto/create-review.dto';
 import { Types, disconnect } from 'mongoose';
-import DoneCallback = jest.DoneCallback;
 
 const productId = new Types.ObjectId().toHexString();
 
@@ -31,7 +30,7 @@ describe('AppController (e2e)', () => {
 
 
 	// @ts-ignore
-	it('/review/create (POST) - success', async (done) => {
+	it('/review/create (POST) - success', async () => {
 		return request(app.getHttpServer())
 			.post('/review/create')
 			.send(testDto)
@@ -39,21 +38,22 @@ describe('AppController (e2e)', () => {
 			.then(({ body }: request.Response) => {
 				createdId = body._id;
 				expect(createdId).toBeDefined();
-				done();
 			});
+
 	});
-	// @ts-ignore
-	it('/review/create (POST)', async (done) => {
+
+
+	it('/review/create (POST) - fail', () => {
 		return request(app.getHttpServer())
 			.post('/review/create')
-			.send(testDto)
-			.expect(201)
+			.send({...testDto, rating: 0})
+			.expect(400)
 			.then(({ body }: request.Response) => {
-				createdId = body._id;
-				expect(createdId).toBeDefined();
-				done();
+				// tslint:disable-next-line:no-console
+				console.log(body);
 			});
 	});
+
 	afterAll(() => {
 		disconnect();
 	});
