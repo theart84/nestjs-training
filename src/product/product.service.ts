@@ -56,6 +56,16 @@ export class ProductService {
 				$addFields: {
 					reviewCount: { $size: '$reviews' }, // добавляем новые поля
 					reviewAvg: { $avg: '$reviews.rating' }, // добавляем новое поле и высчитываем средний рейтинг
+					reviews: {
+						$function: {
+							body: `function(reviews) {
+								reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+								return reviews;
+							}`,
+							args: ['$reviews'],
+							lang: 'js'
+						}
+					}
 				},
 			}, // нужно кастануть тип "as" потому что по умолчанию агрегации выводят тип Aggregation<any[]>
 		]).exec() as (ProductModel & { review: ReviewModel[], reviewCount: number, reviewAvg: number })[];
