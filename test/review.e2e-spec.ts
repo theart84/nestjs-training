@@ -4,29 +4,40 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { CreateReviewDto } from '../src/review/dto/create-review.dto';
 import { Types, disconnect } from 'mongoose';
+import { AuthDto } from '../src/auth/dto/auth.dto';
+import { REVIEW_NOT_FOUND } from '../src/review/review.constants';
 
 const productId = new Types.ObjectId().toHexString();
+
+const loginDto: AuthDto = {
+	login: 'art@art.ru',
+	password: 'qwerty',
+};
 
 const testDto: CreateReviewDto = {
 	name: 'Тест',
 	title: 'Заголовок',
 	description: 'Описание тестовое',
 	rating: 5,
-	productId
+	productId,
 };
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication;
+	let app: INestApplication;
 	let createdId: string;
+	let token: string;
 
-  beforeEach(async () => {
-	const moduleFixture: TestingModule = await Test.createTestingModule({
-		imports: [AppModule],
-	}).compile();
+	beforeEach(async () => {
+		const moduleFixture: TestingModule = await Test.createTestingModule({
+			imports: [AppModule],
+		}).compile();
 
-	app = moduleFixture.createNestApplication();
-	await app.init();
-  });
+		app = moduleFixture.createNestApplication();
+		await app.init();
+
+		const { body } = await request(app.getHttpServer()).post('/auth/login').send(loginDto);
+		token = body.access_token;
+	});
 
 
 	// @ts-ignore
@@ -46,7 +57,7 @@ describe('AppController (e2e)', () => {
 	it('/review/create (POST) - fail', () => {
 		return request(app.getHttpServer())
 			.post('/review/create')
-			.send({...testDto, rating: 0})
+			.send({ ...testDto, rating: 0 })
 			.expect(400)
 			.then(({ body }: request.Response) => {
 				// tslint:disable-next-line:no-console
@@ -54,6 +65,22 @@ describe('AppController (e2e)', () => {
 			});
 	});
 
+	it('/review/:id (DELETE) - success', () => {
+		return request(app.getHttpServer())
+			.delete('/review/' + createdId)
+			.set('Authorization', 'Bearer ' + token)
+			.expect(200);
+	});
+
+	it('/review/:id (DELETE) - fail', () => {
+		return request(app.getHttpServer())
+			.delete('/review/' + new Types.ObjectId().toHexString())
+			.set('Authorization', 'Bearer ' + token)
+			.expect(404, {
+				statusCode: 404,
+				message: REVIEW_NOT_FOUND,
+			});
+	});
 	afterAll(() => {
 		disconnect();
 	});
