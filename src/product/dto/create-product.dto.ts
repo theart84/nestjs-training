@@ -5,8 +5,8 @@ class ProductCharacteristicDto {
 	@IsString()
 	name: string;
 
-	@IsString()
-	value: string;
+	@IsNumber()
+	value: number;
 }
 
 export class CreateProductDto {
