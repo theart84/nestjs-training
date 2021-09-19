@@ -19,7 +19,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 export class TopPageController {
   constructor(private readonly topPageService: TopPageService) {}
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post('create')
   async create(@Body() dto: CreateTopPageDto) {
     return this.topPageService.create(dto);
@@ -68,5 +68,10 @@ export class TopPageController {
   @Post('find')
   async find(@Body() dto: FindTopPageDto) {
     return this.topPageService.findByCategory(dto.firstCategory);
+  }
+
+  @Get('textSearch/:text')
+  async textSearch(@Param('text') text: string) {
+    return this.topPageService.findByText(text);
   }
 }
