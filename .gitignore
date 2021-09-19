@@ -37,3 +37,4 @@ lerna-debug.log*
 /mongo-data
 .clinic
 /uploads
+.env
