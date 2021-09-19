@@ -3,6 +3,7 @@ import { ReviewController } from './review.controller';
 import { TypegooseModule } from 'nestjs-typegoose';
 import { ReviewService } from './review.service';
 import { ReviewModel } from './review.model';
+import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
 	controllers: [ReviewController],
@@ -15,6 +16,7 @@ import { ReviewModel } from './review.model';
 			},
 		},
 	]),
+		TelegramModule
   ],
   providers: [ReviewService],
 })
